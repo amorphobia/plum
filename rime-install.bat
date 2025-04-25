@@ -215,13 +215,13 @@ if errorlevel 1 exit /b %errorlevel%
 set WSLENV=plum_dir:rime_dir
 
 if defined plum_dir if exist "%plum_dir%"/rime-install (
-   bash "%plum_dir%"/rime-install %*
+   %bash% "%plum_dir%"/rime-install %*
    exit /b !errorlevel!
 )
 if exist plum/rime-install (
-  bash plum/rime-install %*
+  %bash% plum/rime-install %*
 ) else if exist rime-install (
-  bash rime-install %*
+  %bash% rime-install %*
 ) else (
   echo Downloading rime-install ...
   set script_url=https://raw.githubusercontent.com/rime/plum/master/rime-install
@@ -230,7 +230,7 @@ if exist plum/rime-install (
     set error_message=Error downloading rime-install
     goto error
   )
-  bash "%download_cache_dir%"/rime-install %*
+  %bash% "%download_cache_dir%"/rime-install %*
 )
 exit /b %errorlevel%
 
@@ -392,8 +392,18 @@ set PATH=%search_path%%PATH%
 where /q git
 if %errorlevel% equ 0 set has_git=1
 
-where /q bash
-if %errorlevel% equ 0 set has_bash=1
+set OLDPATH=%PATH%
+set PATH=%PATH:C:\WINDOWS\System32;=%
+set where=C:\WINDOWS\System32\where.exe
+set find=C:\WINDOWS\System32\find.exe
+
+%where% /q bash
+if %errorlevel% equ 0 (
+   set has_bash=1
+   for /f "delims=" %%g in ('%where% bash^|%find% /v "System32"^|%find% /v "WindowsApps"') do set bash=%%g
+)
+
+set PATH=%OLDPATH%
 
 if "%has_git%" == "1" if "%has_bash%" == "1" set has_git_bash=1
 exit /b
